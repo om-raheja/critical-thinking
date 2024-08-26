@@ -9,22 +9,24 @@
 
 #include "color.h"
 
-#define M_STR 255
+#define M_STR       255
+#define M_STR_LEN   255
 
-void isort(char *, int *, int);
+void isort(char [][M_STR_LEN], int *, int);
 
 int
 main(void)
 {
     // maximum M_STR strings, 255 bytes each
-    char strings[M_STR][255] = { 0 };
+    char strings[M_STR][M_STR_LEN] = { 0 };
 
     // read strings
     printf(BOLDWHITE "Enter a ranking (empty line when done) \n" RESET);
 
     int i;
     for (i = 0; i < M_STR; i++) {
-        fgets(strings[i], 255, stdin);
+        fgets(strings[i], M_STR_LEN, stdin);
+
         // if its an empty string, stop reading
         if (strings[i][0] == '\n') {
             strings[i][0] = '\0';
@@ -34,6 +36,10 @@ main(void)
         // remove newline
         strings[i][strcspn(strings[i], "\n")] = '\0';
     }
+
+    // init sorted strings
+    char sorted_strings[M_STR][i];
+    memcpy(sorted_strings, strings, sizeof(sorted_strings));
 
     // construct matrix of comparisons
     // NOTE: it doesn't actually store the "reason",
@@ -46,7 +52,6 @@ main(void)
     // store the winners
     int winners[i];
     int sorted_winners[i];
-
 
     // memcpy(3) with null bytes
     memset(winners, 0, sizeof(winners));
@@ -84,20 +89,42 @@ main(void)
         }
     }
 
+    // print out the results
+    for (int j = 0; j < i; j++) {
+        printf("%s: %d\n", sorted_strings[j], sorted_winners[j]);
+    }
+
     // insertion sort: the array **should be** nearly sorted
-    isort(strings, sorted_winners, i);
+    isort(sorted_strings, sorted_winners, i);
 
     // print out the results
     for (int j = 0; j < i; j++) {
-        printf("%s: %d\n", strings[j], winners[j]);
+        printf("%s: %d\n", sorted_strings[j], sorted_winners[j]);
     }
 
     return 0;
 } 
 
 void
-isort(char *key, int *value, int i) {
+isort(char name[][M_STR_LEN], int *value, int len) {
     // sort by value, modify key accordingly
-    
+    for (int i = 1; i < len; i++) {
+        int key = value[i];
+        char *str_key = name[i];
+
+        int j = i - 1;
+        while (j >= 0 && value[j] > key) {
+            value[j + 1] = value[j];
+            strncpy(name[j + 1], name[j], M_STR_LEN);
+
+
+            key = value[j];
+            str_key = name[j];
+            j--;
+        }
+        value[++j] = key;
+        strncpy(name[j + 1], str_key, M_STR_LEN);
+    }
+     
     return;
 } 
