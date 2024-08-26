@@ -12,7 +12,7 @@
 #define M_STR       255
 #define M_STR_LEN   255
 
-void isort(char [][M_STR_LEN], int *, int);
+void isort(char [][M_STR], char [][M_STR_LEN], int *, int);
 
 int
 main(void)
@@ -38,7 +38,7 @@ main(void)
     }
 
     // init sorted strings
-    char sorted_strings[M_STR][i];
+    char sorted_strings[i][M_STR_LEN];
     memcpy(sorted_strings, strings, sizeof(sorted_strings));
 
     // construct matrix of comparisons
@@ -55,7 +55,6 @@ main(void)
 
     // memcpy(3) with null bytes
     memset(winners, 0, sizeof(winners));
-    memset(sorted_winners, 0, sizeof(sorted_winners));
 
     // compare all of the elements
     for (int j = 0; j < i; j++) {
@@ -64,18 +63,15 @@ main(void)
             // read one char, set matrix accordingly
             char c = getchar();
             if (c == '>') {
-                matrix[j][k] = 1;
+                matrix[j][k]++;
                 winners[j]++;
-                sorted_winners[j]++;
             } else if (c == '<') {
-                matrix[j][k] = 0;
+                matrix[k][j]++;
                 winners[k]++;
-                sorted_winners[k]++;
             } else {
                 printf("Setting to " BOLDRED "<" RESET ": %c\n", c);
-                matrix[j][k] = 0;
+                matrix[k][j]++;
                 winners[k]++;
-                sorted_winners[k]++;
             } 
 
             // clear input buffer
@@ -89,13 +85,10 @@ main(void)
         }
     }
 
-    // print out the results
-    for (int j = 0; j < i; j++) {
-        printf("%s: %d\n", sorted_strings[j], sorted_winners[j]);
-    }
+    memcpy(sorted_winners, winners, sizeof(sorted_winners));
 
     // insertion sort: the array **should be** nearly sorted
-    isort(sorted_strings, sorted_winners, i);
+    isort(matrix, sorted_strings, sorted_winners, i);
 
     // print out the results
     for (int j = 0; j < i; j++) {
@@ -106,20 +99,28 @@ main(void)
 } 
 
 void
-isort(char name[][M_STR_LEN], int *value, int len) {
+isort(char matrix[][M_STR], char name[][M_STR_LEN], int *value, int len) {
     // sort by value, modify key accordingly
     for (int i = 1; i < len; i++) {
         int key = value[i];
-        char *str_key = name[i];
+
+        char str_key[M_STR_LEN];
+        strncpy(str_key, name[i], M_STR_LEN);
 
         int j = i - 1;
-        while (j >= 0 && value[j] > key) {
+
+        // test
+        printf("%s: %d %d\n", name[i], value[i], i);
+
+        while (j >= 0 && value[j] < key ) {
+            // test
+            
+            printf("key: %d, j: %d, value[j]: %d, value[j+1]: %d, name[j]: %s, name[j+1]: %s\n", key, j, value[j], value[j + 1], name[j], name[j + 1]);
+            // matrix print at value
+            printf("matrix[%d][%d]\n", j, i);
+
             value[j + 1] = value[j];
             strncpy(name[j + 1], name[j], M_STR_LEN);
-
-
-            key = value[j];
-            str_key = name[j];
             j--;
         }
         value[++j] = key;
