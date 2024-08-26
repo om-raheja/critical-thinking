@@ -90,11 +90,12 @@ main(void)
     // insertion sort: the array **should be** nearly sorted
     isort(matrix, sorted_strings, sorted_winners, i);
 
-    // print out the results
+    printf(BOLDRED "Original: " RESET " | " BOLDGREEN "Sorted: " RESET "\n\n");
     for (int j = 0; j < i; j++) {
-        printf("%s: %d\n", sorted_strings[j], sorted_winners[j]);
+        printf("%s: %d | %s: %d\n", 
+                strings[j], winners[j], 
+                sorted_strings[j], sorted_winners[j]);
     }
-
     return 0;
 } 
 
@@ -109,22 +110,14 @@ isort(char matrix[][M_STR], char name[][M_STR_LEN], int *value, int len) {
 
         int j = i - 1;
 
-        // test
-        printf("%s: %d %d\n", name[i], value[i], i);
-
-        while (j >= 0 && value[j] < key ) {
-            // test
-            
-            printf("key: %d, j: %d, value[j]: %d, value[j+1]: %d, name[j]: %s, name[j+1]: %s\n", key, j, value[j], value[j + 1], name[j], name[j + 1]);
-            // matrix print at value
-            printf("matrix[%d][%d]\n", j, i);
-
+        while (j >= 0 && (value[j] < key || matrix[i][j]) ) {
             value[j + 1] = value[j];
             strncpy(name[j + 1], name[j], M_STR_LEN);
+
             j--;
         }
         value[++j] = key;
-        strncpy(name[j + 1], str_key, M_STR_LEN);
+        strncpy(name[j], str_key, M_STR_LEN);
     }
      
     return;
