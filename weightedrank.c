@@ -4,6 +4,7 @@
  * This file is public domain.
  */
 
+#include <getopt.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,10 +12,18 @@
 #include "color.h"
 #include "rank.h"
 
-void isort(char [][M_STR], struct Rank[], int);
+void usage(void);
+
+static struct option long_options[] = {
+    {"help",        no_argument,        NULL, 'h'},
+    {"no-color",    no_argument,        NULL, 'n'},
+    {"weighted",    no_argument,        NULL, 'w'},
+    {"log-file",    required_argument,  NULL, 'l'},
+    {NULL,          0,                  NULL,  0 }
+};
 
 int
-main(void)
+main(int argc, char *argv[])
 {
     // allocate memory for Rank
     struct RankList *items = malloc(sizeof(struct RankList));
@@ -23,7 +32,83 @@ main(void)
         printf(BOLDRED "Error: out of memory\n" RESET);
         return 1;
     }
+    
+    // get options
+    char ch;
+    char weighted = 0;
+    while ((ch = getopt_long(argc, argv, "hnwl:", long_options, NULL)) != -1) {
+        switch (ch) {
+            case 'h':
+                usage();
+                break;
+            case 'n':
+                //TODO: disable_color();
+                puts("Not implemented yet");
+                break;
+            case 'w':
+                weighted = 1;
+                break;
+            case 'l':
+                //TODO: set_log_file(optarg);
+                puts("Not implemented yet");
+                break;
+            default:
+                usage();
+                break;
+        }
+    }
 
+    rank(items);
+
+    if (!weighted) {
+        // print the rank list
+        print_ranklist(items);
+    } else {
+        struct Weighted *weighted = malloc(sizeof(struct Weighted));
+        // move the top 3 items from the ranklist here
+        weighted->opt1 = items->rank_sorted[0].name;
+        weighted->opt2 = items->rank_sorted[1].name;
+        weighted->opt3 = items->rank_sorted[2].name;
+
+        // leave if any are null
+        if (!weighted->opt1 || !weighted->opt2 || !weighted->opt3) {
+            puts(BOLDRED "Error: not enough weights.\n" RESET);
+            goto end;
+        }
+end:
+        free(weighted);
+    } 
+
+    free(items);
+    return 0;
+} 
+
+void
+isort(char matrix[][M_STR], struct Rank to_sort[], int len) {
+    // sort by value, modify key accordingly
+    for (int i = 1; i < len; i++) {
+        int key = to_sort[i].score;
+
+        char str_key[M_STR_LEN];
+        strncpy(str_key, to_sort[i].name, M_STR_LEN);
+
+        int j = i - 1;
+
+        while (j >= 0 && (to_sort[j].score < key || matrix[i][j]) ) {
+            to_sort[j + 1].score = to_sort[j].score;
+            strncpy(to_sort[j + 1].name, to_sort[j].name, M_STR_LEN);
+
+            j--;
+        }
+        to_sort[++j].score = key;
+        strncpy(to_sort[j].name, str_key, M_STR_LEN);
+    }
+     
+    return;
+} 
+
+void
+rank(struct RankList *items) {
     // read strings
     printf(BOLDWHITE "Enter a ranking (empty line when done) \n" RESET);
 
@@ -47,9 +132,9 @@ main(void)
     // construct matrix of comparisons
     // NOTE: it doesn't actually store the "reason",
     // it just forces the user to type something out lol
-    char matrix[i][i];
+    char matrix[M_STR][M_STR];
 
-    // memcpy(3) with null bytes
+    // memset(3) with null bytes
     memset(matrix, 0, sizeof(matrix));
 
     // compare all of the elements
@@ -83,40 +168,28 @@ main(void)
 
     memcpy(items->rank_sorted, items->rank, sizeof(struct Rank) * M_STR);
 
+    items->rank_count = i;
+
     // insertion sort: the array **should be** nearly sorted
     isort(matrix, items->rank_sorted, i);
+}
 
+void
+print_ranklist(struct RankList *items) {
     printf(BOLDRED "Original: " RESET " | " BOLDGREEN "Sorted: " RESET "\n\n");
-    for (int j = 0; j < i; j++) {
+    for (int j = 0; j < items->rank_count; j++) {
         printf("%s: %d | %s: %d\n", 
                 items->rank[j].name, items->rank[j].score, 
                 items->rank_sorted[j].name, items->rank_sorted[j].score);
     }
+}
 
-    free(items);
-    return 0;
-} 
-
-void
-isort(char matrix[][M_STR], struct Rank to_sort[], int len) {
-    // sort by value, modify key accordingly
-    for (int i = 1; i < len; i++) {
-        int key = to_sort[i].score;
-
-        char str_key[M_STR_LEN];
-        strncpy(str_key, to_sort[i].name, M_STR_LEN);
-
-        int j = i - 1;
-
-        while (j >= 0 && (to_sort[j].score < key || matrix[i][j]) ) {
-            to_sort[j + 1].score = to_sort[j].score;
-            strncpy(to_sort[j + 1].name, to_sort[j].name, M_STR_LEN);
-
-            j--;
-        }
-        to_sort[++j].score = key;
-        strncpy(to_sort[j].name, str_key, M_STR_LEN);
-    }
-     
-    return;
+void 
+usage(void) {
+    puts(BOLDWHITE "Usage: weightedrank [options]\n" 
+                   "Options:\n" RESET
+         "  -h, --help            display this help and exit\n"
+         "  -n, --no-color        disable colors\n"
+         "  -w, --weighted        use weighted rankings\n"
+         "  -l, --log-file FILE   write log to FILE\n");
 } 
