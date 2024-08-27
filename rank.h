@@ -8,14 +8,14 @@ struct Rank
 { 
     char name[M_STR_LEN];
     int  score;
-}
+};
 
 struct RankList
 {
-    Rank rank[M_STR];
-    Rank rank_sorted[M_STR];
+    struct Rank rank[M_STR];
+    struct Rank rank_sorted[M_STR];
     int  rank_count;
-}
+};
 
 
 #endif
