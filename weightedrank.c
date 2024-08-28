@@ -64,19 +64,63 @@ main(int argc, char *argv[])
         // print the rank list
         print_ranklist(items);
     } else {
-        struct Weighted *weighted = malloc(sizeof(struct Weighted));
-        // move the top 3 items from the ranklist here
-        weighted->opt1 = items->rank_sorted[0].name;
-        weighted->opt2 = items->rank_sorted[1].name;
-        weighted->opt3 = items->rank_sorted[2].name;
 
         // leave if any are null
-        if (!weighted->opt1 || !weighted->opt2 || !weighted->opt3) {
+        if (items->rank_sorted[0].name[0] == 0 || 
+            items->rank_sorted[1].name[0] == 0 ||
+            items->rank_sorted[2].name[0] == 0) {
+                
             puts(BOLDRED "Error: not enough weights.\n" RESET);
-            goto end;
+            goto w_end;
         }
-end:
-        free(weighted);
+
+        /* we are now going to rank in a weighted manner for all 3 */
+
+        // init
+        struct WAlloc *mem = malloc(sizeof(struct WAlloc));
+        struct Weighted weighted = mem->weighted;
+
+        // move the top 3 items from the ranklist here
+        weighted.opt1 = items->rank_sorted[0].name;
+        weighted.opt2 = items->rank_sorted[1].name;
+        weighted.opt3 = items->rank_sorted[2].name;
+
+        char buf[16]; //enough to hold weight
+        char *ptr;
+        // ask for weights
+        printf(BOLDGREEN "Enter weight for %s\n" RESET);
+        fgets(buf, 16, stdin);
+        weighted.opt1_w = strtof(buf, &ptr, 10);
+        if (ptr != NULL) {
+            printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt1_w);
+        }
+
+        printf(BOLDGREEN "Enter weight for %s\n" RESET);
+        fgets(buf, 16, stdin);
+        weighted.opt2_w = strtof(buf, &ptr, 10);
+            
+        if (ptr != NULL) {
+            printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt2_w);
+        }
+
+        printf(BOLDGREEN "Enter weight for %s\n" RESET);
+        fgets(buf, 16, stdin);
+        weighted.opt3_w = strtof(buf, &ptr, 10);
+        
+        if (ptr != NULL) {
+            printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt3_w);
+        }
+
+        printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt1);
+        rank(&mem->r[0]);
+        printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt2);
+        rank(&mem->r[1]);
+        printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt3);
+        rank(&mem->r[2]);
+
+        
+w_end:
+        free(mem);
     } 
 
     free(items);

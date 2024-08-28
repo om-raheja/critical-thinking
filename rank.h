@@ -27,6 +27,13 @@ struct Weighted
     float opt3_w;
 };
 
+/* for one big alloc operation instead of multiple */
+struct WAlloc 
+{
+    struct Weighted w;
+    struct RankList r[3];
+};
+
 void isort(char [][M_STR], struct Rank[], int);
 void rank(struct RankList *);
 void print_ranklist(struct RankList *);
