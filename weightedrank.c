@@ -59,8 +59,7 @@ main(int argc, char *argv[])
     }
 
     items->rank_count = rrlstdin(items->rank);
-    memcpy(items->srank, items->rank, sizeof(items->rank));
-    rank(items);
+    rank(items->srank, items->rank_count);
 
     if (!weighted) {
         // print the rank list
@@ -114,11 +113,11 @@ main(int argc, char *argv[])
         }
 
         printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt1);
-        rank(&mem->r[0]);
+        rank(mem->rl.srank[0], mem->rl.rank_count);
         printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt2);
-        rank(&mem->r[1]);
+        rank(mem->rl.srank[1], mem->rl.rank_count);
         printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt3);
-        rank(&mem->r[2]);
+        rank(mem->rl.srank[2], mem->rl.rank_count);
 
         
 w_end:
@@ -154,12 +153,13 @@ isort(char matrix[][M_STR], struct Rank to_sort[], int len) {
 } 
 
 int
-rrlstdin(struct Rank items[]) {
+rrlstdin(struct Rank items[]) 
+{
     printf(BOLDWHITE "Enter items...\n" RESET);
     int i;
     for (i = 0; i < M_STR; i++) {
         // local buffer for name
-        char *name = items->rank[i].name;
+        char *name = items[i].name;
 
         puts(BOLDGREEN "> " RESET);
         fgets(name, M_STR_LEN, stdin);
@@ -179,10 +179,13 @@ rrlstdin(struct Rank items[]) {
         } 
         name[nl] = '\0';
     }
+    
+    return i;
 }
 
 void
-rank(struct RankList *items) {
+rank(struct Rank *items, int i) 
+{
     // construct matrix of comparisons
     // NOTE: it doesn't actually store the "reason",
     // it just forces the user to type something out lol
@@ -194,19 +197,19 @@ rank(struct RankList *items) {
     // compare all of the elements
     for (int j = 0; j < i; j++) {
         for (int k = j + 1; k < i; k++) {
-            printf("%s vs %s (>/<): ", items->rank[j].name, items->rank[k].name);
+            printf("%s vs %s (>/<): ", items[j].name, items[k].name);
             // read one char, set matrix accordingly
             char c = getchar();
             if (c == '>') {
                 matrix[j][k]++;
-                items->rank[j].score++;
+                items[j].score++;
             } else if (c == '<') {
                 matrix[k][j]++;
-                items->rank[k].score++;
+                items[k].score++;
             } else {
                 printf("Setting to " BOLDRED "<" RESET ": %c\n", c);
                 matrix[k][j]++;
-                items->rank[k].score++;
+                items[k].score++;
             } 
 
             // clear input buffer
@@ -220,12 +223,8 @@ rank(struct RankList *items) {
         }
     }
 
-    memcpy(items->srank, items->rank, sizeof(struct Rank) * M_STR);
-
-    items->rank_count = i;
-
     // insertion sort: the array **should be** nearly sorted
-    isort(matrix, items->srank, i);
+    isort(matrix, items, i);
 }
 
 void

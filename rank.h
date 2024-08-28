@@ -20,9 +20,9 @@ struct RankList
 struct WRankList
 {
     int             rank_count;
-    struct Weighted rank[M_STR];
-    struct Weighted srank[3][M_STR];
-} 
+    struct Rank     rank[M_STR];
+    struct Rank     srank[3][M_STR];
+};
 
 struct Weighted
 {
@@ -43,7 +43,9 @@ struct WAlloc
 };
 
 void isort(char [][M_STR], struct Rank[], int);
-void rank(struct RankList *);
+void rank(struct Rank *, int);
 void print_ranklist(struct RankList *);
+
+int  rrlstdin(struct Rank[]);
 
 #endif
