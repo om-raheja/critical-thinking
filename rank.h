@@ -6,32 +6,40 @@
 
 struct Rank
 { 
-    char name[M_STR_LEN];
-    int  score;
+    int     score; 
+    char    name[M_STR_LEN];
 };
 
 struct RankList
 {
+    int         rank_count;
     struct Rank rank[M_STR];
-    struct Rank rank_sorted[M_STR];
-    int  rank_count;
+    struct Rank srank[M_STR];
 };
+
+struct WRankList
+{
+    int             rank_count;
+    struct Weighted rank[M_STR];
+    struct Weighted srank[3][M_STR];
+} 
 
 struct Weighted
 {
-    char opt1[M_STR_LEN];
     float opt1_w;
-    char opt2[M_STR_LEN];
     float opt2_w;
-    char opt3[M_STR_LEN];
     float opt3_w;
+
+    char opt1[M_STR_LEN];
+    char opt2[M_STR_LEN];
+    char opt3[M_STR_LEN];
 };
 
 /* for one big alloc operation instead of multiple */
 struct WAlloc 
 {
-    struct Weighted w;
-    struct RankList r[3];
+    struct Weighted     w;
+    struct WRankList    rl;
 };
 
 void isort(char [][M_STR], struct Rank[], int);

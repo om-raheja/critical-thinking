@@ -58,6 +58,8 @@ main(int argc, char *argv[])
         }
     }
 
+    items->rank_count = rrlstdin(items->rank);
+    memcpy(items->srank, items->rank, sizeof(items->rank));
     rank(items);
 
     if (!weighted) {
@@ -66,9 +68,9 @@ main(int argc, char *argv[])
     } else {
 
         // leave if any are null
-        if (items->rank_sorted[0].name[0] == 0 || 
-            items->rank_sorted[1].name[0] == 0 ||
-            items->rank_sorted[2].name[0] == 0) {
+        if (items->srank[0].name[0] == 0 || 
+            items->srank[1].name[0] == 0 ||
+            items->srank[2].name[0] == 0) {
                 
             puts(BOLDRED "Error: not enough weights.\n" RESET);
             goto w_end;
@@ -78,34 +80,34 @@ main(int argc, char *argv[])
 
         // init
         struct WAlloc *mem = malloc(sizeof(struct WAlloc));
-        struct Weighted weighted = mem->weighted;
+        struct Weighted weighted = mem->w;
 
         // move the top 3 items from the ranklist here
-        weighted.opt1 = items->rank_sorted[0].name;
-        weighted.opt2 = items->rank_sorted[1].name;
-        weighted.opt3 = items->rank_sorted[2].name;
+        strncpy(weighted.opt1, items->srank[0].name, M_STR);
+        strncpy(weighted.opt2, items->srank[1].name, M_STR);
+        strncpy(weighted.opt3, items->srank[2].name, M_STR);
 
         char buf[16]; //enough to hold weight
         char *ptr;
         // ask for weights
-        printf(BOLDGREEN "Enter weight for %s\n" RESET);
+        printf(BOLDGREEN "Enter weight for %s\n" RESET, weighted.opt1);
         fgets(buf, 16, stdin);
-        weighted.opt1_w = strtof(buf, &ptr, 10);
+        weighted.opt1_w = strtof(buf, &ptr);
         if (ptr != NULL) {
             printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt1_w);
         }
 
-        printf(BOLDGREEN "Enter weight for %s\n" RESET);
+        printf(BOLDGREEN "Enter weight for %s\n" RESET, weighted.opt2);
         fgets(buf, 16, stdin);
-        weighted.opt2_w = strtof(buf, &ptr, 10);
+        weighted.opt2_w = strtof(buf, &ptr);
             
         if (ptr != NULL) {
             printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt2_w);
         }
 
-        printf(BOLDGREEN "Enter weight for %s\n" RESET);
+        printf(BOLDGREEN "Enter weight for %s\n" RESET, weighted.opt3);
         fgets(buf, 16, stdin);
-        weighted.opt3_w = strtof(buf, &ptr, 10);
+        weighted.opt3_w = strtof(buf, &ptr);
         
         if (ptr != NULL) {
             printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt3_w);
@@ -151,16 +153,15 @@ isort(char matrix[][M_STR], struct Rank to_sort[], int len) {
     return;
 } 
 
-void
-rank(struct RankList *items) {
-    // read strings
-    printf(BOLDWHITE "Enter a ranking (empty line when done) \n" RESET);
-
+int
+rrlstdin(struct Rank items[]) {
+    printf(BOLDWHITE "Enter items...\n" RESET);
     int i;
     for (i = 0; i < M_STR; i++) {
         // local buffer for name
         char *name = items->rank[i].name;
 
+        puts(BOLDGREEN "> " RESET);
         fgets(name, M_STR_LEN, stdin);
 
         // if its an empty string, stop reading
@@ -170,9 +171,18 @@ rank(struct RankList *items) {
         } 
 
         // remove newline
-        name[strcspn(name, "\n")] = '\0';
+        char nl = strcspn(name, "\n");
+        if (nl != '\n' || nl != 0) {
+            // it was cut off
+            puts(BOLDRED "Truncated to 255 chars." RESET);
+            name[nl] = '\0';
+        } 
+        name[nl] = '\0';
     }
+}
 
+void
+rank(struct RankList *items) {
     // construct matrix of comparisons
     // NOTE: it doesn't actually store the "reason",
     // it just forces the user to type something out lol
@@ -210,12 +220,12 @@ rank(struct RankList *items) {
         }
     }
 
-    memcpy(items->rank_sorted, items->rank, sizeof(struct Rank) * M_STR);
+    memcpy(items->srank, items->rank, sizeof(struct Rank) * M_STR);
 
     items->rank_count = i;
 
     // insertion sort: the array **should be** nearly sorted
-    isort(matrix, items->rank_sorted, i);
+    isort(matrix, items->srank, i);
 }
 
 void
@@ -224,7 +234,7 @@ print_ranklist(struct RankList *items) {
     for (int j = 0; j < items->rank_count; j++) {
         printf("%s: %d | %s: %d\n", 
                 items->rank[j].name, items->rank[j].score, 
-                items->rank_sorted[j].name, items->rank_sorted[j].score);
+                items->srank[j].name, items->srank[j].score);
     }
 }
 
@@ -236,4 +246,6 @@ usage(void) {
          "  -n, --no-color        disable colors\n"
          "  -w, --weighted        use weighted rankings\n"
          "  -l, --log-file FILE   write log to FILE\n");
+
+    exit(0);
 } 
