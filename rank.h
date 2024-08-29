@@ -13,14 +13,14 @@ struct Rank
 struct RankList
 {
     int         rank_count;
-    struct Rank rank[M_STR];
+    char        rank[M_STR][M_STR_LEN];
     struct Rank srank[M_STR];
 };
 
 struct WRankList
 {
     int             rank_count;
-    struct Rank     rank[M_STR];
+    char            rank[M_STR][M_STR_LEN];
     struct Rank     srank[3][M_STR];
 };
 
@@ -46,6 +46,7 @@ void isort(char [][M_STR], struct Rank[], int);
 void rank(struct Rank *, int);
 void print_ranklist(struct RankList *);
 
-int  rrlstdin(struct Rank[]);
+/* read string from stdin */
+int  rsstdin(char [][M_STR_LEN]);
 
 #endif

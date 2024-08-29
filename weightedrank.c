@@ -58,7 +58,8 @@ main(int argc, char *argv[])
         }
     }
 
-    items->rank_count = rrlstdin(items->rank);
+    items->rank_count = rsstdin(items->rank);
+    memcpy(items->srank, items->rank, sizeof(struct Rank) * items->rank_count);
     rank(items->srank, items->rank_count);
 
     if (!weighted) {
@@ -153,31 +154,29 @@ isort(char matrix[][M_STR], struct Rank to_sort[], int len) {
 } 
 
 int
-rrlstdin(struct Rank items[]) 
+rsstdin(char items[M_STR][M_STR_LEN]) 
 {
-    printf(BOLDWHITE "Enter items...\n" RESET);
+    puts(BOLDWHITE "Enter items..." RESET);
     int i;
     for (i = 0; i < M_STR; i++) {
         // local buffer for name
-        char *name = items[i].name;
-
-        puts(BOLDGREEN "> " RESET);
-        fgets(name, M_STR_LEN, stdin);
+        printf(BOLDGREEN "> " RESET);
+        fgets(items[i], M_STR_LEN, stdin);
 
         // if its an empty string, stop reading
-        if (name[0] == '\n') {
-            name[0] = '\0';
+        if (items[i][0] == '\n') {
+            items[i][0] = '\0';
             break;
         } 
 
         // remove newline
-        char nl = strcspn(name, "\n");
-        if (nl != '\n' || nl != 0) {
+        char nl = strcspn(items[i], "\n");
+        if (items[i][nl] != '\n' && items[i][nl] != 0) {
             // it was cut off
             puts(BOLDRED "Truncated to 255 chars." RESET);
-            name[nl] = '\0';
+            items[i][nl] = '\0';
         } 
-        name[nl] = '\0';
+        items[i][nl] = '\0';
     }
     
     return i;
@@ -232,7 +231,7 @@ print_ranklist(struct RankList *items) {
     printf(BOLDRED "Original: " RESET " | " BOLDGREEN "Sorted: " RESET "\n\n");
     for (int j = 0; j < items->rank_count; j++) {
         printf("%s: %d | %s: %d\n", 
-                items->rank[j].name, items->rank[j].score, 
+                items->rank[j], items->rank_count - j - 1, 
                 items->srank[j].name, items->srank[j].score);
     }
 }
