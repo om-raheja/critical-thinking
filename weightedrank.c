@@ -65,10 +65,10 @@ main(int argc, char *argv[])
     }
     rank(items->srank, items->rank_count);
 
-    if (!weighted) {
-        // print the rank list
-        print_ranklist(items);
-    } else {
+    print_ranklist(items);
+    if (weighted) {
+        // weighted ranking
+        puts(BOLDWHITE "Choosing top 3 weights." RESET);
 
         // leave if any are null
         if (items->rank_count < 3) {
@@ -90,7 +90,6 @@ main(int argc, char *argv[])
         char buf[16]; //enough to hold weight
         float left = 1.0; // 100%
         char *ptr;
-        // ask for weights
 
         /* weight 1 */
         printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(1.0) > " RESET, weighted.opt1);
@@ -101,14 +100,13 @@ main(int argc, char *argv[])
             goto w_end;
         }
 
-        if (ptr != NULL) {
-            printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt1_w);
-        }
+        printf(BOLDWHITE "Using %g for %s" RESET "\n", 
+                weighted.opt1_w, weighted.opt1);
 
         left -= weighted.opt1_w;
 
         /* weight 2 */
-        printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(%f) > " RESET, weighted.opt2, left);
+        printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(%g) > " RESET, weighted.opt2, left);
         fgets(buf, 16, stdin);
         weighted.opt2_w = strtof(buf, &ptr);
         if (weighted.opt2_w >= 1.0 || weighted.opt2_w <= 0.0) {
@@ -116,24 +114,27 @@ main(int argc, char *argv[])
             goto w_end;
         }
 
-        if (ptr != NULL) {
-            printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt2_w);
-        }
+        printf(BOLDWHITE "Using %g for %s" RESET "\n", 
+                weighted.opt2_w, weighted.opt2);
 
         left -= weighted.opt2_w;
 
         /* weight 3 */
-        printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(%f) > " RESET, weighted.opt3, left);
-        fgets(buf, 16, stdin);
-        weighted.opt3_w = strtof(buf, &ptr);
-        if (weighted.opt3_w >= 1.0 || weighted.opt3_w <= 0.0) {
-            printf(BOLDRED "Error: weight must be between 0 and 1\n" RESET);
-            goto w_end;
+        weighted.opt3_w = left;
+        printf(BOLDWHITE "Using %g for %s" RESET "\n", 
+                weighted.opt3_w, weighted.opt3);
+
+        // copy memory before ranking
+        int space = sizeof(struct Rank) * items->rank_count;
+
+        // manual copy with for loop
+        for (int i = 0; i < items->rank_count; i++) {
+            strncpy(mem->rl.srank[0][i].name, items->rank[i], M_STR_LEN);
         }
 
-        if (ptr != NULL) {
-            printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt3_w);
-        }
+        memcpy(mem->rl.srank[1], mem->rl.srank[0], space);
+        memcpy(mem->rl.srank[2], mem->rl.srank[1], space);
+
 
         printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt1);
         rank(mem->rl.srank[0], mem->rl.rank_count);
@@ -142,15 +143,34 @@ main(int argc, char *argv[])
         printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt3);
         rank(mem->rl.srank[2], mem->rl.rank_count);
 
-        // now do some vector math :)
-        // nothing too performance intensive, don't need to optimize
         printf("\n\n" BOLDWHITE "**FINAL RANKING**" "\n"
-                "%s " BOLDGREEN "(%f)" BOLDWHITE " | " 
-                "%s " BOLDGREEN "(%f)" BOLDWHITE " | " 
-                "%s " BOLDGREEN "(%f)" RESET "\n\n",
+                BOLDYELLOW "name | "
+                "%s " BOLDGREEN "(%g)" BOLDWHITE " | " 
+                "%s " BOLDGREEN "(%g)" BOLDWHITE " | " 
+                "%s " BOLDGREEN "(%g)" BOLDWHITE " | "
+                "total " RESET "\n\n",
                 weighted.opt1, weighted.opt1_w, 
                 weighted.opt2, weighted.opt2_w, 
                 weighted.opt3, weighted.opt3_w);
+
+        for (int i = 0; i < mem->rl.rank_count; i++) {
+            // garbage dot product T_T
+            
+            int total = mem->rl.srank[0][i].score * weighted.opt1_w +
+                        mem->rl.srank[1][i].score * weighted.opt2_w +
+                        mem->rl.srank[2][i].score * weighted.opt3_w;
+
+            printf(BOLDWHITE "%s | " 
+                    BOLDGREEN "%d*%g " BOLDWHITE "|" 
+                    BOLDGREEN "%d*%g " BOLDWHITE "|" 
+                    BOLDGREEN "%d*%g " BOLDWHITE "|" 
+                    BOLDGREEN "%d " RESET "\n", 
+                    mem->rl.srank[0][i].name, 
+                    mem->rl.srank[0][i].score, weighted.opt1_w, 
+                    mem->rl.srank[1][i].score, weighted.opt2_w, 
+                    mem->rl.srank[2][i].score, weighted.opt3_w, 
+                    total);
+        }
 w_end:
         free(mem);
     } 
