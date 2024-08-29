@@ -59,7 +59,10 @@ main(int argc, char *argv[])
     }
 
     items->rank_count = rsstdin(items->rank);
-    memcpy(items->srank, items->rank, sizeof(struct Rank) * items->rank_count);
+    for (int i = 0; i < items->rank_count; i++) {
+        strncpy(items->srank[i].name, items->rank[i], M_STR_LEN);
+        items->srank[i].score = 0;
+    }
     rank(items->srank, items->rank_count);
 
     if (!weighted) {
@@ -68,10 +71,7 @@ main(int argc, char *argv[])
     } else {
 
         // leave if any are null
-        if (items->srank[0].name[0] == 0 || 
-            items->srank[1].name[0] == 0 ||
-            items->srank[2].name[0] == 0) {
-                
+        if (items->rank_count < 3) {
             puts(BOLDRED "Error: not enough weights.\n" RESET);
             goto w_end;
         }
@@ -88,27 +88,49 @@ main(int argc, char *argv[])
         strncpy(weighted.opt3, items->srank[2].name, M_STR);
 
         char buf[16]; //enough to hold weight
+        float left = 1.0; // 100%
         char *ptr;
         // ask for weights
-        printf(BOLDGREEN "Enter weight for %s\n" RESET, weighted.opt1);
+
+        /* weight 1 */
+        printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(1.0) > " RESET, weighted.opt1);
         fgets(buf, 16, stdin);
         weighted.opt1_w = strtof(buf, &ptr);
+        if (weighted.opt1_w >= 1.0 || weighted.opt1_w <= 0.0) {
+            printf(BOLDRED "Error: weight must be between 0 and 1\n" RESET);
+            goto w_end;
+        }
+
         if (ptr != NULL) {
             printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt1_w);
         }
 
-        printf(BOLDGREEN "Enter weight for %s\n" RESET, weighted.opt2);
+        left -= weighted.opt1_w;
+
+        /* weight 2 */
+        printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(%f) > " RESET, weighted.opt2, left);
         fgets(buf, 16, stdin);
         weighted.opt2_w = strtof(buf, &ptr);
-            
+        if (weighted.opt2_w >= 1.0 || weighted.opt2_w <= 0.0) {
+            printf(BOLDRED "Error: weight must be between 0 and 1\n" RESET);
+            goto w_end;
+        }
+
         if (ptr != NULL) {
             printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt2_w);
         }
 
-        printf(BOLDGREEN "Enter weight for %s\n" RESET, weighted.opt3);
+        left -= weighted.opt2_w;
+
+        /* weight 3 */
+        printf(BOLDWHITE "Weight for %s\n" BOLDGREEN "(%f) > " RESET, weighted.opt3, left);
         fgets(buf, 16, stdin);
         weighted.opt3_w = strtof(buf, &ptr);
-        
+        if (weighted.opt3_w >= 1.0 || weighted.opt3_w <= 0.0) {
+            printf(BOLDRED "Error: weight must be between 0 and 1\n" RESET);
+            goto w_end;
+        }
+
         if (ptr != NULL) {
             printf(BOLDWHITE "Using %f" RESET "\n", weighted.opt3_w);
         }
@@ -120,7 +142,15 @@ main(int argc, char *argv[])
         printf(BOLDRED "\nRank according to %s\n\n" RESET, weighted.opt3);
         rank(mem->rl.srank[2], mem->rl.rank_count);
 
-        
+        // now do some vector math :)
+        // nothing too performance intensive, don't need to optimize
+        printf("\n\n" BOLDWHITE "**FINAL RANKING**" "\n"
+                "%s " BOLDGREEN "(%f)" BOLDWHITE " | " 
+                "%s " BOLDGREEN "(%f)" BOLDWHITE " | " 
+                "%s " BOLDGREEN "(%f)" RESET "\n\n",
+                weighted.opt1, weighted.opt1_w, 
+                weighted.opt2, weighted.opt2_w, 
+                weighted.opt3, weighted.opt3_w);
 w_end:
         free(mem);
     } 
