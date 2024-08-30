@@ -127,9 +127,12 @@ main(int argc, char *argv[])
         // copy memory before ranking
         int space = sizeof(struct Rank) * items->rank_count;
 
+        printf("\n\n" BOLDWHITE "**Choose items to rank!**" "\n");
+        mem->rl.rank_count = rsstdin(mem->rl.rank);
+
         // manual copy with for loop
         for (int i = 0; i < items->rank_count; i++) {
-            strncpy(mem->rl.srank[0][i].name, items->rank[i], M_STR_LEN);
+            strncpy(mem->rl.srank[0][i].name, mem->rl.rank[i], M_STR_LEN);
         }
 
         memcpy(mem->rl.srank[1], mem->rl.srank[0], space);
@@ -148,23 +151,23 @@ main(int argc, char *argv[])
                 "%s " BOLDGREEN "(%g)" BOLDWHITE " | " 
                 "%s " BOLDGREEN "(%g)" BOLDWHITE " | " 
                 "%s " BOLDGREEN "(%g)" BOLDWHITE " | "
-                "total " RESET "\n\n",
+                "total " RESET "\n",
                 weighted.opt1, weighted.opt1_w, 
                 weighted.opt2, weighted.opt2_w, 
                 weighted.opt3, weighted.opt3_w);
 
         for (int i = 0; i < mem->rl.rank_count; i++) {
             // garbage dot product T_T
-            
-            int total = mem->rl.srank[0][i].score * weighted.opt1_w +
-                        mem->rl.srank[1][i].score * weighted.opt2_w +
-                        mem->rl.srank[2][i].score * weighted.opt3_w;
+            float total = 
+                ((double) mem->rl.srank[0][i].score) * weighted.opt1_w +
+                ((double) mem->rl.srank[1][i].score) * weighted.opt2_w +
+                ((double) mem->rl.srank[2][i].score) * weighted.opt3_w;
 
             printf(BOLDWHITE "%s | " 
-                    BOLDGREEN "%d*%g " BOLDWHITE "|" 
-                    BOLDGREEN "%d*%g " BOLDWHITE "|" 
-                    BOLDGREEN "%d*%g " BOLDWHITE "|" 
-                    BOLDGREEN "%d " RESET "\n", 
+                    BOLDGREEN "%d*%g " BOLDWHITE "| " 
+                    BOLDGREEN "%d*%g " BOLDWHITE "| " 
+                    BOLDGREEN "%d*%g " BOLDWHITE " |" 
+                    BOLDGREEN "%g " RESET "\n", 
                     mem->rl.srank[0][i].name, 
                     mem->rl.srank[0][i].score, weighted.opt1_w, 
                     mem->rl.srank[1][i].score, weighted.opt2_w, 
