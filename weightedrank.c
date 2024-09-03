@@ -131,7 +131,7 @@ main(int argc, char *argv[])
         mem->rl.rank_count = rsstdin(mem->rl.rank);
 
         // manual copy with for loop
-        for (int i = 0; i < items->rank_count; i++) {
+        for (int i = 0; i < mem->rl.rank_count; i++) {
             strncpy(mem->rl.srank[0][i].name, mem->rl.rank[i], M_STR_LEN);
         }
 

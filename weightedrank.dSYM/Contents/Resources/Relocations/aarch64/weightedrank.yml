@@ -1,0 +1,13 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     weightedrank
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x1000029C0, symSize: 0x8D8 }
+  - { offsetInCU: 0x59, offset: 0x59, size: 0x8, addend: 0x0, symName: _long_options, symObjAddr: 0x1510, symBinAddr: 0x100008000, symSize: 0x0 }
+  - { offsetInCU: 0xC4, offset: 0xC4, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x1000029C0, symSize: 0x8D8 }
+  - { offsetInCU: 0x214, offset: 0x214, size: 0x8, addend: 0x0, symName: _usage, symObjAddr: 0x918, symBinAddr: 0x1000032D8, symSize: 0x1C }
+  - { offsetInCU: 0x22A, offset: 0x22A, size: 0x8, addend: 0x0, symName: _rsstdin, symObjAddr: 0x934, symBinAddr: 0x1000032F4, symSize: 0x1A8 }
+  - { offsetInCU: 0x27C, offset: 0x27C, size: 0x8, addend: 0x0, symName: _rank, symObjAddr: 0xADC, symBinAddr: 0x10000349C, symSize: 0x2BC }
+  - { offsetInCU: 0x310, offset: 0x310, size: 0x8, addend: 0x0, symName: _print_ranklist, symObjAddr: 0xD98, symBinAddr: 0x100003758, symSize: 0xE8 }
+  - { offsetInCU: 0x353, offset: 0x353, size: 0x8, addend: 0x0, symName: _isort, symObjAddr: 0xE80, symBinAddr: 0x100003840, symSize: 0x230 }
+...
