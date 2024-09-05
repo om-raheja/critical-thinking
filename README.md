@@ -15,4 +15,9 @@ My code is public domain, licensed under the [0BSD](https://spdx.org/licenses/0B
 Book copyright (c) 1995, 1998 Morgan Jones
 
 ## Install
-tbd
+
+Currently only `weightedrank` and `rank` can be built. Please build them using `make weightedrank` and `make rank`, respectively.
+
+## Demo
+
+[![demo](demo.png)](https://git.rslp.org/omr/critical-thinking)
